@@ -44,7 +44,7 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json({ backups: detailsList });
+    return NextResponse.json({ backups: detailsList.sort((a, b) => new Date(b.date) - new Date(a.date)) });
   } catch (error) {
     console.error('Error reading backup details:', error);
     return NextResponse.json({ error: 'Failed to list backup details' }, { status: 500 });

@@ -43,22 +43,24 @@ export default function LayoutClient({ children }) {
     return (
         <ThemeProvider theme={theme}>
 
-            <Dialog
-                open={!termsOfUseAccepted}
-                onClose={() => { }}
-            >
-                <DialogTitle>Terms of Use</DialogTitle>
-                <DialogContent>
-                    <Typography
-                        variant="body2"
-                    >
-                        Text
-                    </Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setTermsOfUseAccepted(true)}>Accept</Button>
-                </DialogActions>
-            </Dialog>
+            {!termsOfUseAccepted &&
+                <Dialog
+                    open={!termsOfUseAccepted}
+                    onClose={() => { }}
+                >
+                    <DialogTitle>Terms of Use</DialogTitle>
+                    <DialogContent>
+                        <Typography
+                            variant="body2"
+                        >
+                            Text
+                        </Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setTermsOfUseAccepted(true)}>Accept</Button>
+                    </DialogActions>
+                </Dialog>
+            }
 
             {children}
 

@@ -1,4 +1,8 @@
 .page {
     margin-top: 50px;
     padding: 1rem;
+
+    &.no-padding {
+        padding: 0rem;
+    }
 }

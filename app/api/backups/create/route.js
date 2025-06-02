@@ -5,10 +5,20 @@ import path from 'path';
 export async function POST(req) {
 
     const body = await req.json();
-    const { name, backupTemplate  } = body;
+    const {
+        name,
+        backupTemplate,
+        downloadLocation
+    } = body;
 
-    // return NextResponse.json({ error: backupTemplate }, { status: 500 });
-    
+    // return NextResponse.json(
+    //     {
+    //         error: backupTemplate,
+    //         downloadLocation: downloadLocation
+    //     },
+    //     { status: 500 }
+    // );
+
     try {
         // Get current date and time
         const now = new Date();
@@ -20,7 +30,9 @@ export async function POST(req) {
             .replace(/:/g, '-')
             .replace(/\..+/, '');
 
-        const backupsDir = path.join(process.cwd(), `backups/${backupTemplate.name}`);
+        // const backupsDir = path.join(process.cwd(), `${backupTemplate.name}`);
+        const backupsDir = path.join(downloadLocation, `${backupTemplate.name}`);
+
         const newFolderPath = path.join(backupsDir, folderName);
 
         // Ensure the backups directory exists

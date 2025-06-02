@@ -1,15 +1,22 @@
 "use client"
 
 import { useSiteStore } from "@/components/stores/useSiteStore";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, TextField, Typography } from "@mui/material";
 import SetupChecklist from "./SetupChecklist";
+import { useState } from "react";
 
 export default function Page() {
 
     const addCount = useSiteStore((state) => state.addCount);
     const count = useSiteStore((state) => state.count);
 
+    const storageLocations = useSiteStore((state) => state.storageLocations);
+    const setStorageLocations = useSiteStore((state) => state.setStorageLocations);
+    const removeStorageLocation = useSiteStore((state) => state.removeStorageLocation);
+
     const resetStore = useSiteStore((state) => state.resetStore);
+
+    const [newLocation, setNewLocation] = useState('');
 
     return (
         <div className="page">
@@ -42,11 +49,54 @@ export default function Page() {
                 F:\My Documents\Sites\backup
             </Typography>
 
+            {storageLocations.map((location_obj, location_i) => {
+                return (
+                    <div
+                        key={location_obj}
+                    >
+                        <Typography
+                            sx={{ mb: 1 }}
+                        >
+                            {location_obj}
+                        </Typography>
+                        <Button
+                            color="warning"
+                            variant="contained"
+                            size="small"
+                            sx={{
+                                mb: 3
+                            }}
+                            onClick={() => {
+                                removeStorageLocation(location_i)
+                            }}
+                        >
+                            removeStorageLocation
+                        </Button>
+                    </div>
+                )
+            })}
+
+            <TextField
+                value={newLocation}
+                size="small"
+                onChange={(e) => {
+                    setNewLocation(e.target.value)
+                }}
+            />
+
             <Button
                 color="primary"
                 variant="contained"
                 sx={{
                     mb: 3
+                }}
+                disabled={!newLocation}
+                onClick={() => {
+                    setNewLocation('')
+                    setStorageLocations([
+                        ...storageLocations,
+                        newLocation
+                    ])
                 }}
             >
                 Add Location

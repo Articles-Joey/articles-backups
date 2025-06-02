@@ -16,6 +16,16 @@ export const useSiteStore = create()(
       termsOfUseAccepted: false,
       setTermsOfUseAccepted: (value) => set({ termsOfUseAccepted: value }),
 
+      storageLocations: [
+        'D:\\Articles Backups'
+      ],
+      setStorageLocations: (value) => set({ storageLocations: value }),
+      removeStorageLocation: (index) => {
+        const current = get().storageLocations;
+        const updated = current.filter((_, i) => i !== index);
+        set({ storageLocations: updated });
+      },
+
     }),
     {
       name: 'useSiteStore', // name of the item in the storage (must be unique)
