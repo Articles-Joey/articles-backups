@@ -6,10 +6,9 @@
 
 ## 🚀 Features
 
-- Save and back up your favorite articles
-- Organize articles with tags and metadata
-- View saved content in a clean reader mode
-- Export backups for offline use
+- Backup, Compress, and Encrypt your backups
+- Organize and search backups with favorites and metadata
+- Export backups to cloud providers
 - RESTful API for integration and automation
 
 ---
@@ -32,7 +31,10 @@
 
 - 🖥️ Electron Integration
 Run Articles Backups as a standalone desktop app with a one-click setup.
-This feature will bundle the backend, frontend, and configuration flow into a single   executable file for seamless local use and management — no server setup required.
+This feature will bundle the backend, frontend, and configuration flow into a single   executable file for seamless local use and management.
+
+- 💽 Linux Support
+Plans to support Linux file systems.
 
 ---
 
@@ -46,7 +48,7 @@ We welcome contributions from the community! Whether you want to fix a bug, add 
 4. Push to the branch (`git push origin feature/some-feature`)
 5. Open a pull request
 
-Please follow the [Code of Conduct](CODE_OF_CONDUCT.md) and read through our [Contributing Guide](CONTRIBUTING.md) for details on how to get started.
+Please read through our [Contributing Guide](CONTRIBUTING.md) for details on how to get started.
 
 ---
 
@@ -62,7 +64,7 @@ Security is a top priority. If you discover a vulnerability in this project:
 
 ## 📚 About
 
-Articles Backups was created to give users peace of mind knowing that their valuable content isn’t at the mercy of link rot or platform shutdowns. It’s a tool for digital preservation, research organization, and personal knowledge management.
+Articles Backups was created by ArticlesJoey as a side project. It's purpose is to assist in backup creation and management. Written in JavaScript and Node.JS it offers a lightweight backup manager in a easily understandable way. This allows easier contribution and lower attack vectors.
 
 Maintained by [Your Name](https://github.com/yourusername) and open to contributions from the community.
 

@@ -1,0 +1,1 @@
+// Maybe make terms a page as well? Right now just a modal.

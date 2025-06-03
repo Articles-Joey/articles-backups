@@ -35,6 +35,7 @@ export async function GET() {
 
             // Create relative path from `backups/`
             json.directDetailsPath = path.join('backups', subfolder, timestamp, 'details.json');
+            json.directPath = path.join(process.cwd(), 'backups', subfolder, timestamp);
 
             detailsList.push(json);
           } catch (err) {

@@ -90,6 +90,39 @@ export default function Page() {
             })}
           </Box>
 
+          {backupTemplate &&
+            <Box sx={{
+              mb: 3
+            }}>
+
+              <Typography sx={{ mb: 1 }}>
+                Templates Details:
+              </Typography>
+
+              <Box sx={{ ml: 2 }}>
+
+                <Typography sx={{ mb: 1 }}>
+                  Backup Locations:
+                </Typography>
+
+                <Box sx={{ ml: 2 }}>
+                  {backupTemplate?.locations?.length ?
+                    <div>
+                      {backupTemplate?.locations?.map(location => {
+                        return (
+                          <Box key={location} sx={{ mb: 2 }}>{location}</Box>
+                        )
+                      })}
+                    </div>
+                    :
+                    'None'
+                  }
+                </Box>
+
+              </Box>
+            </Box>
+          }
+
           <Typography sx={{ mb: 1 }}>
             Download Location:
           </Typography>
@@ -195,7 +228,7 @@ export default function Page() {
             Cloud Upload
           </Typography>
 
-           <Typography sx={{ mb: 1, fontSize: '0.8rem' }}>
+          <Typography sx={{ mb: 1, fontSize: '0.8rem' }}>
             Upload the finished backup to a cloud provider?
           </Typography>
 
