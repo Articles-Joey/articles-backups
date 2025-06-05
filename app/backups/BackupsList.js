@@ -98,7 +98,10 @@ function BackupItem({ backup, onDeleteConfirmed }) {
     };
 
     return (
-        <Box sx={{ mb: 2, pb: 2, borderBottom: '1px solid white' }}>
+        <Box 
+            sx={{ mb: 0, p: 2, borderBottom: '1px solid gray' }}
+            className=""
+        >
             <Box sx={{ mb: 1 }}>
                 <Box sx={{ mb: 0.5 }}>
                     {backup.encrypted &&

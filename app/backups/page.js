@@ -1,6 +1,6 @@
 "use client"
 
-import { Box, Button, CircularProgress, Stack, Typography } from "@mui/material";
+import { Box, Button, Card, CircularProgress, Stack, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 
 import { useBackupTemplates } from '@/components/hooks/useBackupTemplates';
@@ -14,17 +14,26 @@ import { filesize } from "filesize";
 import { useSiteStore } from "@/components/stores/useSiteStore";
 import { useInstallLocation } from "@/components/hooks/useInstallLocation";
 
+import "@/styles/pages/backups.scss";
+import { Add, Delete, Settings } from "@mui/icons-material";
+import BackupTemplateListItem from "./BackupTemplateListItem";
+import NewBackupTemplate from "./NewBackupTemplateListItem";
+
 export default function Page() {
 
-  const [backupTemplates, setBackupTemplates] = useState([
-    {
-      name: "My Documents"
-    },
-    {
-      name: "Articles"
-    }
-  ]);
+  // const [backupTemplates, setBackupTemplates] = useState([
+  //   {
+  //     name: "My Documents"
+  //   },
+  //   {
+  //     name: "Articles"
+  //   }
+  // ]);
+
   const [backupTemplate, setBackupTemplate] = useState(null);
+  const [editBackupTemplate, setEditBackupTemplate] = useState(null);
+
+  const [newBackupTemplate, setNewBackupTemplate] = useState('');
 
   const [downloadLocation, setDownloadLocation] = useState(null);
 
@@ -32,6 +41,18 @@ export default function Page() {
   // const [backupsLoading, setBackupsLoading] = useState(false);
 
   const storageLocations = useSiteStore((state) => state.storageLocations);
+
+  const [compressionOptions, setCompressionOptions] = useState({
+    type: false
+  });
+
+  const [encryptionOptions, setEncryptionOptions] = useState({
+    type: false
+  });
+
+  const [cloudOptions, setCloudOptions] = useState({
+    type: false
+  });
 
   const {
     templates,
@@ -54,7 +75,7 @@ export default function Page() {
   } = useInstallLocation();
 
   return (
-    <div className="page no-padding">
+    <div className="page no-padding backups-page">
 
       {/* <Typography sx={{ mb: 5 }}>
         Backups
@@ -65,7 +86,9 @@ export default function Page() {
         <Box
           sx={{
             width: '50%',
-            p: 1
+            p: 1,
+            height: 'calc(100vh - 50px)',
+            overflow: 'auto',
           }}
         >
 
@@ -74,6 +97,24 @@ export default function Page() {
           </Typography>
 
           <Box sx={{ mb: 2 }}>
+
+            <Button
+              // key={template_obj.name}
+              sx={{
+                mr: 2
+              }}
+              variant={newBackupTemplate !== false ? 'contained' : 'outlined'}
+              color="primary"
+              onClick={async () => {
+                newBackupTemplate !== false ?
+                  setNewBackupTemplate(false)
+                  :
+                  setNewBackupTemplate('')
+              }}
+            >
+              <Add />
+            </Button>
+
             {templates?.map(template_obj => {
               return (
                 <Button
@@ -88,39 +129,21 @@ export default function Page() {
                 </Button>
               )
             })}
+
           </Box>
 
+          {newBackupTemplate !== false &&
+            <NewBackupTemplate
+              setNewBackupTemplate={setNewBackupTemplate}
+            />
+
+          }
+
           {backupTemplate &&
-            <Box sx={{
-              mb: 3
-            }}>
-
-              <Typography sx={{ mb: 1 }}>
-                Templates Details:
-              </Typography>
-
-              <Box sx={{ ml: 2 }}>
-
-                <Typography sx={{ mb: 1 }}>
-                  Backup Locations:
-                </Typography>
-
-                <Box sx={{ ml: 2 }}>
-                  {backupTemplate?.locations?.length ?
-                    <div>
-                      {backupTemplate?.locations?.map(location => {
-                        return (
-                          <Box key={location} sx={{ mb: 2 }}>{location}</Box>
-                        )
-                      })}
-                    </div>
-                    :
-                    'None'
-                  }
-                </Box>
-
-              </Box>
-            </Box>
+            <BackupTemplateListItem
+              backupTemplate={backupTemplate}
+              setBackupTemplate={setBackupTemplate}
+            />
           }
 
           <Typography sx={{ mb: 1 }}>
@@ -163,19 +186,25 @@ export default function Page() {
           <Box sx={{ mb: 2 }}>
 
             <Button
-              variant={'outlined'}
+              variant={!compressionOptions?.type ? 'contained' : 'outlined'}
               color="primary"
               onClick={async () => {
-
+                setCompressionOptions({
+                  ...compressionOptions,
+                  type: false
+                })
               }}
             >
               None
             </Button>
             <Button
-              variant={'outlined'}
+              variant={compressionOptions?.type == "ZIP" ? 'contained' : 'outlined'}
               color="primary"
               onClick={async () => {
-
+                setCompressionOptions({
+                  ...compressionOptions,
+                  type: "ZIP"
+                })
               }}
             >
               ZIP
@@ -305,22 +334,27 @@ export default function Page() {
         <Box
           sx={{
             width: '50%',
-            borderLeft: '1px solid white',
-            paddingLeft: '1rem',
+            borderLeft: '1px solid gray',
+            // paddingLeft: '1rem',
             height: 'calc(100vh - 50px)',
-            overflow: 'auto'
+            overflow: 'auto',
+            position: 'relative'
           }}
         >
 
           <Box
             sx={{
-              mb: 2,
+              // mb: 5,
               display: 'flex',
               justifyContent: 'space-between'
             }}
+            className="floating-backups-toolbar"
           >
 
-            <Box>
+            <Box
+
+            >
+
               <Button
                 variant="contained"
                 color="primary"
@@ -346,7 +380,7 @@ export default function Page() {
                 }}
               >
                 <FindInPageIcon />
-                Open Backups
+                Backups
               </Button>
 
               <Button
@@ -374,8 +408,9 @@ export default function Page() {
                 }}
               >
                 <FindInPageIcon />
-                Open Templates
+                Templates
               </Button>
+
             </Box>
 
             <Box>
@@ -419,13 +454,14 @@ export default function Page() {
           {backups?.length > 0 ?
             <Box
               sx={{
-                mb: 1
+                mb: 1,
+                mt: 6
               }}
             >
 
-              <Box sx={{ mb: 2 }}>
+              {/* <Box sx={{ mb: 2 }}>
                 {backups?.length} Backups - {filesize(backups?.reduce((acc, b) => acc + b.size, 0))} total!
-              </Box>
+              </Box> */}
 
               <BackupsList />
 

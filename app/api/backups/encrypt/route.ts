@@ -41,8 +41,9 @@ export async function POST(req: Request) {
     const baseDir = process.cwd();
     const resolvedPath = path.resolve(baseDir, folderPath);
     const dataDir = path.join(resolvedPath, 'data');
-    const zipPath = path.join(resolvedPath, 'data.zip');
     const detailsPath = path.join(resolvedPath, 'details.json');
+    const encryptedVolumePath = path.join(resolvedPath, 'encrypted.vc');
+    const sizeMB = 50; // Customize volume size if needed
 
     if (!resolvedPath.startsWith(baseDir)) {
       return NextResponse.json({ error: 'Path is outside the project directory' }, { status: 400 });
@@ -50,10 +51,6 @@ export async function POST(req: Request) {
 
     if (!fs.existsSync(resolvedPath) || !fs.lstatSync(resolvedPath).isDirectory()) {
       return NextResponse.json({ error: 'Folder does not exist' }, { status: 404 });
-    }
-
-    if (!fs.existsSync(dataDir) || !fs.lstatSync(dataDir).isDirectory()) {
-      return NextResponse.json({ error: 'Missing data/ folder to compress' }, { status: 400 });
     }
 
     let details: Record<string, any> = {};
@@ -68,25 +65,35 @@ export async function POST(req: Request) {
     const isEncrypted = !!details.encrypted;
 
     if (isEncrypted) {
-
-      // Uncompress: delete data.zip, remove compressionSize
-      // if (fs.existsSync(zipPath)) {
-      //   fs.unlinkSync(zipPath);
-      // }
-
-      // details.compressed = false;
-      // delete details.compressionSize;
-      // fs.writeFileSync(detailsPath, JSON.stringify(details, null, 2), 'utf-8');
-
-      return NextResponse.json({ success: true, action: 'Is encrypted' });
-
-    } else {
-      
-      return NextResponse.json({ success: true, action: 'Is not encrypted' });
-
+      return NextResponse.json({ success: true, action: 'Already encrypted' });
     }
+
+    const veracryptDir = 'C:\\Program Files\\VeraCrypt'; // adjust if different
+    const veracryptExe = '.\\VeraCrypt Format.exe';
+
+    // Create encrypted VeraCrypt volume
+    // const createCommand = `VeraCrypt /create "${encryptedVolumePath}" /size ${sizeMB}M /password test /encryption AES /hash SHA-512 /filesystem exFAT /volumeType normal /quick /silent`;
+
+    // const createCommand = `cd "${veracryptDir}" && ${veracryptExe} /create "${encryptedVolumePath}" /size ${sizeMB}M /password test /encryption AES /hash SHA-512 /filesystem exFAT /volumeType normal /quick /silent`;
+
+    const veracryptFormat = `"C:\\Program Files\\VeraCrypt\\VeraCrypt Format.exe"`;
+    const veracryptLocation = `"F:\\My Documents\\Sites\\articles-backups\\backups\\My Documents\\2025-06-03_20-08-48"`;
+    const createCommand = `${veracryptFormat} /create ${veracryptLocation} /size "200M" /password test /encryption AES /hash sha-512 /filesystem exFAT /pim 0 /silent /force`
+
+    await execAsync(createCommand);
+
+    // Mark as encrypted
+    details.encrypted = true;
+    fs.writeFileSync(detailsPath, JSON.stringify(details, null, 2), 'utf-8');
+
+    return NextResponse.json({
+      success: true,
+      action: 'Encrypted with VeraCrypt',
+      volume: encryptedVolumePath
+    });
+
   } catch (err: any) {
-    console.error('Compression error:', err);
-    return NextResponse.json({ error: 'Failed to toggle compression' }, { status: 500 });
+    console.error('Encryption error:', err);
+    return NextResponse.json({ error: 'Failed to encrypt folder' }, { status: 500 });
   }
 }

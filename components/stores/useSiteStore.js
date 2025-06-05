@@ -26,6 +26,12 @@ export const useSiteStore = create()(
         set({ storageLocations: updated });
       },
 
+      darkMode: true,
+      toggleDarkMode: (value) => {
+        const current = get().darkMode;
+        set({ darkMode: !current })
+      }
+
     }),
     {
       name: 'useSiteStore', // name of the item in the storage (must be unique)
