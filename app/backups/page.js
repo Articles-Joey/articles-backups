@@ -1,6 +1,6 @@
 "use client"
 
-import { Box, Button, Card, CircularProgress, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, Card, CircularProgress, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 
 import { useBackupTemplates } from '@/components/hooks/useBackupTemplates';
@@ -457,39 +457,51 @@ export default function Page() {
             </Box>
 
             <Box>
-
               <Button
-                variant="contained"
+                variant="outlined"
                 color="primary"
                 size="small"
-                onClick={async () => {
-                  mutateBackups()
-                }}
               >
-                <RefreshIcon />
-                {/* <span>Refresh</span> */}
-                <span>Backups</span>
+                Search & Filters
               </Button>
+            </Box>
 
-              <Button
-                variant="contained"
-                color="primary"
-                size="small"
-                onClick={async () => {
-                  mutateTemplates()
-                }}
-              >
-                <RefreshIcon />
-                {/* <span>Refresh</span> */}
-                <span>Templates</span>
-              </Button>
+            <Box>
+
+              <Tooltip title="Refresh Backups">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  onClick={async () => {
+                    mutateBackups()
+                  }}
+                  title="Refresh Backups"
+                >
+                  <RefreshIcon />
+                </Button>
+              </Tooltip>
+
+              <Tooltip title="Refresh Templates">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  onClick={async () => {
+                    mutateTemplates()
+                  }}
+                  title="Refresh Templates"
+                >
+                  <RefreshIcon />
+                </Button>
+              </Tooltip>
             </Box>
 
           </Box>
 
           {backupsIsLoading &&
-            <Box mt={8} sx={{display: 'flex', justifyContent: "center", alignItems: 'center'}}>
-              <CircularProgress sx={{mr: 2}} />
+            <Box mt={8} sx={{ display: 'flex', justifyContent: "center", alignItems: 'center' }}>
+              <CircularProgress sx={{ mr: 2 }} />
               <div>Loading</div>
             </Box>
           }
@@ -502,13 +514,13 @@ export default function Page() {
                   mt: 6
                 }}
               >
-  
+
                 {/* <Box sx={{ mb: 2 }}>
                   {backups?.length} Backups - {filesize(backups?.reduce((acc, b) => acc + b.size, 0))} total!
                 </Box> */}
-  
+
                 <BackupsList />
-  
+
               </Box>
               :
               <Box

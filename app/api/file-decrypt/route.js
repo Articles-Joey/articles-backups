@@ -30,7 +30,7 @@ function getAllFiles(dir) {
     return results;
 }
 
-const PASSWORD = 'test';
+const PASSWORD = process.env.ENCRYPTION_PLAINTEXT_PASSWORD;
 const ALGORITHM = 'aes-256-cbc';
 const KEYLEN = 32; // 256 bits
 const IVLEN = 16; // 128 bits

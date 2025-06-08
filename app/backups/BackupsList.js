@@ -8,6 +8,8 @@ import {
     DialogActions,
     Typography,
     Chip,
+    Snackbar,
+    Alert,
 } from "@mui/material";
 import { format } from "date-fns";
 import { filesize } from "filesize";
@@ -42,6 +44,7 @@ function BackupItem({ backup, onDeleteConfirmed }) {
 
     const [showDetails, setShowDetails] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
+    const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
     const {
         data: backups,
@@ -305,13 +308,13 @@ function BackupItem({ backup, onDeleteConfirmed }) {
                                 });
                                 const data = await res.json();
                                 if (res.ok) {
-                                    alert('File encrypted!');
+                                    setToast({ open: true, message: 'File encrypted!', severity: 'success' });
                                     mutateBackups();
                                 } else {
-                                    alert('Error: ' + data.error);
+                                    setToast({ open: true, message: 'Error: ' + data.error, severity: 'error' });
                                 }
                             } catch (err) {
-                                alert('Unexpected error: ' + err.message);
+                                setToast({ open: true, message: 'Unexpected error: ' + err.message, severity: 'error' });
                             }
                         }}
                     >
@@ -338,13 +341,13 @@ function BackupItem({ backup, onDeleteConfirmed }) {
                                 });
                                 const data = await res.json();
                                 if (res.ok) {
-                                    alert('File decrypted!');
+                                    setToast({ open: true, message: 'File decrypted!', severity: 'success' });
                                     mutateBackups();
                                 } else {
-                                    alert('Error: ' + data.error);
+                                    setToast({ open: true, message: 'Error: ' + data.error, severity: 'error' });
                                 }
                             } catch (err) {
-                                alert('Unexpected error: ' + err.message);
+                                setToast({ open: true, message: 'Unexpected error: ' + err.message, severity: 'error' });
                             }
                         }}
                     >
@@ -396,6 +399,17 @@ function BackupItem({ backup, onDeleteConfirmed }) {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            <Snackbar
+                open={toast.open}
+                autoHideDuration={4000}
+                onClose={() => setToast({ ...toast, open: false })}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert onClose={() => setToast({ ...toast, open: false })} severity={toast.severity} sx={{ width: '100%' }}>
+                    {toast.message}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }
