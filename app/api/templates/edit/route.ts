@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     }
 
     try {
-        const { fileName, locations } = await req.json();
+        const { fileName, locations, schedule_frequency } = await req.json();
 
         if (
             !fileName || typeof fileName !== 'string' ||
@@ -37,6 +37,7 @@ export async function POST(req: Request) {
         }
 
         currentData.locations = locations;
+        currentData.schedule_frequency = schedule_frequency;
 
         fs.writeFileSync(filePath, JSON.stringify(currentData, null, 2), 'utf-8');
 

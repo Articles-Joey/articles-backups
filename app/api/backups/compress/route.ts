@@ -52,10 +52,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Folder does not exist' }, { status: 404 });
     }
 
-    if (!fs.existsSync(dataDir) || !fs.lstatSync(dataDir).isDirectory()) {
-      return NextResponse.json({ error: 'Missing data/ folder to compress' }, { status: 400 });
-    }
-
+    // Only check for dataDir if compressing, not uncompressing
     let details: Record<string, any> = {};
     if (fs.existsSync(detailsPath)) {
       try {
@@ -68,9 +65,16 @@ export async function POST(req: Request) {
     const isCompressed = !!details.compressed;
 
     if (isCompressed) {
-      // Uncompress: delete data.zip, remove compressionSize
+      // Uncompress: extract data.zip to data folder, remove compressionSize
       if (fs.existsSync(zipPath)) {
-        fs.unlinkSync(zipPath);
+      // Ensure the data folder does not exist before extraction
+      if (fs.existsSync(dataDir)) {
+        fs.rmSync(dataDir, { recursive: true, force: true });
+      }
+      // Use PowerShell to extract the zip
+      const extractCommand = `powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${dataDir}' -Force"`;
+      await execAsync(extractCommand);
+      fs.unlinkSync(zipPath);
       }
 
       details.compressed = false;
@@ -78,29 +82,36 @@ export async function POST(req: Request) {
       fs.writeFileSync(detailsPath, JSON.stringify(details, null, 2), 'utf-8');
 
       return NextResponse.json({ success: true, action: 'uncompressed' });
-    } else {
-      // Compress: only the contents of the data/ folder
-      const preSize = getFolderSize(dataDir);
-      details.preCompressionSize = preSize;
-      fs.writeFileSync(detailsPath, JSON.stringify(details, null, 2), 'utf-8');
-
-      const command = `powershell -Command "Compress-Archive -Path '${dataDir}\\*' -DestinationPath '${zipPath}' -Force"`;
-      await execAsync(command);
-
-      const zipStats = fs.statSync(zipPath);
-      details.compressed = true;
-      details.compressionSize = zipStats.size;
-
-      fs.writeFileSync(detailsPath, JSON.stringify(details, null, 2), 'utf-8');
-
-      return NextResponse.json({
-        success: true,
-        action: 'compressed',
-        zipPath,
-        compressionSize: zipStats.size,
-        preCompressionSize: preSize,
-      });
     }
+
+    // Only check for dataDir if compressing
+    if (!fs.existsSync(dataDir) || !fs.lstatSync(dataDir).isDirectory()) {
+      return NextResponse.json({ error: 'Missing data/ folder to compress' }, { status: 400 });
+    }
+
+    const preSize = getFolderSize(dataDir);
+    details.preCompressionSize = preSize;
+    fs.writeFileSync(detailsPath, JSON.stringify(details, null, 2), 'utf-8');
+
+    const command = `powershell -Command "Compress-Archive -Path '${dataDir}\\*' -DestinationPath '${zipPath}' -Force"`;
+    await execAsync(command);
+
+    // Remove the data folder after compression
+    fs.rmSync(dataDir, { recursive: true, force: true });
+
+    const zipStats = fs.statSync(zipPath);
+    details.compressed = true;
+    details.compressionSize = zipStats.size;
+
+    fs.writeFileSync(detailsPath, JSON.stringify(details, null, 2), 'utf-8');
+
+    return NextResponse.json({
+      success: true,
+      action: 'compressed',
+      zipPath,
+      compressionSize: zipStats.size,
+      preCompressionSize: preSize,
+    });
   } catch (err: any) {
     console.error('Compression error:', err);
     return NextResponse.json({ error: 'Failed to toggle compression' }, { status: 500 });

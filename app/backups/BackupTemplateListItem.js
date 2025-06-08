@@ -60,7 +60,7 @@ export default function BackupTemplateListItem({
                                     const res = await fetch(`/api/open-folder`, {
                                         method: 'POST',
                                         body: JSON.stringify({
-                                            folderPath: `${backupTemplate?.name}.json`
+                                            folderPath: `${backupTemplate.fullPath}`
                                         })
                                     });
 
@@ -124,6 +124,57 @@ export default function BackupTemplateListItem({
                             Delete
                         </Button>
 
+                    </Box>
+
+                    <Typography sx={{ mb: 1 }}>
+                        Backup Schedule:
+                    </Typography>
+
+                    <Box sx={{ mb: 2 }}>
+                        {[
+                            { label: 'None', value: 'None' },
+                            { label: 'Every Day', value: 'Daily' },
+                            { label: 'Every Week', value: 'Weekly' },
+                            { label: 'Every Month', value: 'Monthly' },
+                            { label: 'Custom', value: 'Custom' },
+                        ].map(obj => {
+                            return (
+                                <Button
+                                    key={obj.label}
+                                    size="small"
+                                    variant={
+                                        (backupTemplate?.schedule_frequency === obj.value) ||
+                                        (obj.value === 'None' && !backupTemplate?.schedule_frequency)
+                                            ? 'contained'
+                                            : 'outlined'
+                                    }
+                                    onClick={async () => {
+                                        try {
+                                            const res = await fetch(`/api/templates/edit`, {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                    fileName: `${backupTemplate?.name}.json`,
+                                                    locations: backupTemplate?.locations || [],
+                                                    schedule_frequency: obj.value === 'None' ? false : obj.value
+                                                })
+                                            });
+                                            const data = await res.json();
+                                            if (res.ok) {
+                                                setBackupTemplate({ ...backupTemplate, schedule_frequency: obj.value === 'None' ? false : obj.value });
+                                                mutateTemplates();
+                                            } else {
+                                                alert('Error: ' + data.error);
+                                            }
+                                        } catch (err) {
+                                            alert('Unexpected error: ' + err.message);
+                                        }
+                                    }}
+                                >
+                                    {obj.label}
+                                </Button>
+                            )
+                        })}
                     </Box>
 
                     <Typography sx={{ mb: 1 }}>

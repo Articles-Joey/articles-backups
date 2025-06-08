@@ -26,6 +26,9 @@ export const useSiteStore = create()(
         set({ storageLocations: updated });
       },
 
+      awsUploadLocation: '',
+      setAwsUploadLocation: (value) => set({ awsUploadLocation: value }),
+
       darkMode: true,
       toggleDarkMode: (value) => {
         const current = get().darkMode;

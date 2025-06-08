@@ -146,6 +146,49 @@ export default function Page() {
             />
           }
 
+          {/* Backup Schedule Frequency Selection */}
+          {backupTemplate && (
+            <>
+              <Typography sx={{ mb: 1 }}>
+                Backup Schedule:
+              </Typography>
+              <Box sx={{ mb: 2 }}>
+                {['Daily', 'Weekly', 'Monthly', 'Custom'].map(option => (
+                  <Button
+                    key={option}
+                    variant={backupTemplate.schedule_frequency === option ? 'contained' : 'outlined'}
+                    color="primary"
+                    sx={{ mr: 1, mb: 1 }}
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/templates/edit', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            fileName: backupTemplate.name + '.json',
+                            locations: backupTemplate.locations || [],
+                            schedule_frequency: option
+                          })
+                        });
+                        if (res.ok) {
+                          // Update local state to reflect new schedule_frequency
+                          setBackupTemplate({ ...backupTemplate, schedule_frequency: option });
+                        } else {
+                          const data = await res.json();
+                          alert('Error: ' + data.error);
+                        }
+                      } catch (err) {
+                        alert('Unexpected error: ' + err.message);
+                      }
+                    }}
+                  >
+                    {option}
+                  </Button>
+                ))}
+              </Box>
+            </>
+          )}
+
           <Typography sx={{ mb: 1 }}>
             Download Location:
           </Typography>
@@ -445,36 +488,38 @@ export default function Page() {
           </Box>
 
           {backupsIsLoading &&
-            <div>
-              <CircularProgress />
+            <Box mt={8} sx={{display: 'flex', justifyContent: "center", alignItems: 'center'}}>
+              <CircularProgress sx={{mr: 2}} />
               <div>Loading</div>
-            </div>
-          }
-
-          {backups?.length > 0 ?
-            <Box
-              sx={{
-                mb: 1,
-                mt: 6
-              }}
-            >
-
-              {/* <Box sx={{ mb: 2 }}>
-                {backups?.length} Backups - {filesize(backups?.reduce((acc, b) => acc + b.size, 0))} total!
-              </Box> */}
-
-              <BackupsList />
-
-            </Box>
-            :
-            <Box
-              sx={{
-                mb: 1
-              }}
-            >
-              No Backups!
             </Box>
           }
+
+          {!backupsIsLoading && <>
+            {backups?.length > 0 ?
+              <Box
+                sx={{
+                  mb: 1,
+                  mt: 6
+                }}
+              >
+  
+                {/* <Box sx={{ mb: 2 }}>
+                  {backups?.length} Backups - {filesize(backups?.reduce((acc, b) => acc + b.size, 0))} total!
+                </Box> */}
+  
+                <BackupsList />
+  
+              </Box>
+              :
+              <Box
+                sx={{
+                  mb: 1
+                }}
+              >
+                No Backups!
+              </Box>
+            }
+          </>}
 
         </Box>
 

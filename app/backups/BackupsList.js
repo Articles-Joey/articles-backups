@@ -16,6 +16,7 @@ import { useState } from "react";
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarIcon from '@mui/icons-material/Star';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import { useInstallLocation } from "@/components/hooks/useInstallLocation";
 
 export default function BackupsList() {
     const {
@@ -47,6 +48,12 @@ function BackupItem({ backup, onDeleteConfirmed }) {
         isLoading: backupsIsLoading,
         mutate: mutateBackups,
     } = useBackups();
+
+    const {
+        data: installLocation,
+        // isLoading: backupsIsLoading,
+        // mutate: mutateBackups,
+    } = useInstallLocation();
 
     const handleDelete = async () => {
 
@@ -97,8 +104,19 @@ function BackupItem({ backup, onDeleteConfirmed }) {
         onDeleteConfirmed();
     };
 
+    // Extract the first two parts of the directPath (e.g., "C:\Test\123\something" -> "C:\Test\123")
+    const getRootFolder = (directPath) => {
+        if (!directPath) return '';
+        // Normalize slashes and split
+        const parts = directPath.replace(/\//g, '\\').split('\\');
+        if (parts.length >= 3) {
+            return `${parts[0]}\\${parts[1]}\\${parts[2]}`;
+        }
+        return directPath;
+    };
+
     return (
-        <Box 
+        <Box
             sx={{ mb: 0, p: 2, borderBottom: '1px solid gray' }}
             className=""
         >
@@ -107,16 +125,36 @@ function BackupItem({ backup, onDeleteConfirmed }) {
                     {backup.encrypted &&
                         <Chip size="small" label="Encrypted" color="primary" variant="outlined" />
                     }
-                    {backup.compressed &&
-                        <Chip size="small" label={`${filesize(
-                            backup?.compressionSize || 0,
-                            { standard: "jedec" }
-                        )}`} color="primary" variant="outlined" />
+                    {backup.compressed && (
+                        <>
+                            <Chip size="small" label={`${filesize(
+                                backup?.compressionSize || 0,
+                                { standard: "jedec" }
+                            )}`} color="primary" variant="outlined" />
+                            {typeof backup.size === 'number' && typeof backup.compressionSize === 'number' && backup.size > 0 && (
+                                <Chip
+                                    size="small"
+                                    label={`-${Math.round(100 - (backup.compressionSize / backup.size) * 100)}%`}
+                                    color="success"
+                                    variant="outlined"
+                                    sx={{ ml: 0.5 }}
+                                />
+                            )}
+                        </>
+                    )}
+                    {backup.encryption_method &&
+                        <Chip size="small" label={`${backup.encryption_method}`} color="primary" variant="outlined" />
                     }
                 </Box>
                 <div>Template Name: {backup.name}</div>
                 <div>Date: {format(new Date(backup.date), "yyyy-MM-dd pp")}</div>
                 <div>Size: {filesize(backup.size)}</div>
+                <Box sx={{ mt: 1 }}>
+                    {backup.directPath && installLocation && backup.directPath.includes(installLocation)
+                        ? <Chip size="small" label="App Location" color="secondary" variant="outlined" />
+                        : <>Root Folder: {backup.directPath}</>
+                    }
+                </Box>
             </Box>
             <Box>
                 <Button
@@ -134,8 +172,11 @@ function BackupItem({ backup, onDeleteConfirmed }) {
                     size="small"
                     onClick={async () => {
                         try {
-                            const res = await fetch(`/api/open-folder?folderPath=${backup.directPath}`, {
-                                method: 'GET',
+                            const res = await fetch(`/api/open-folder`, {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    folderPath: backup.directPath
+                                })
                             });
 
                             const data = await res.json();
@@ -205,7 +246,7 @@ function BackupItem({ backup, onDeleteConfirmed }) {
                     }
                 </Button>
 
-                <Button
+                {/* <Button
                     size="small"
                     color="primary"
                     variant={backup.encrypted ?
@@ -246,7 +287,70 @@ function BackupItem({ backup, onDeleteConfirmed }) {
                         :
                         'Encrypt'
                     }
-                </Button>
+                </Button> */}
+
+                {/* File Encrypt/Decrypt Buttons */}
+                {backup.directPath && !backup.encrypted && (
+                    <Button
+                        size="small"
+                        color="secondary"
+                        variant="outlined"
+                        sx={{ ml: 1 }}
+                        onClick={async () => {
+                            try {
+                                const res = await fetch('/api/file-encrypt', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ filePath: backup.directPath }),
+                                });
+                                const data = await res.json();
+                                if (res.ok) {
+                                    alert('File encrypted!');
+                                    mutateBackups();
+                                } else {
+                                    alert('Error: ' + data.error);
+                                }
+                            } catch (err) {
+                                alert('Unexpected error: ' + err.message);
+                            }
+                        }}
+                    >
+                        Encrypt File
+                    </Button>
+                )}
+                {
+                // backup.directPath 
+                // && 
+                // backup.directPath.endsWith('.enc') 
+                backup.encrypted
+                && (
+                    <Button
+                        size="small"
+                        color="secondary"
+                        variant="outlined"
+                        sx={{ ml: 1 }}
+                        onClick={async () => {
+                            try {
+                                const res = await fetch('/api/file-decrypt', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ filePath: backup.directPath }),
+                                });
+                                const data = await res.json();
+                                if (res.ok) {
+                                    alert('File decrypted!');
+                                    mutateBackups();
+                                } else {
+                                    alert('Error: ' + data.error);
+                                }
+                            } catch (err) {
+                                alert('Unexpected error: ' + err.message);
+                            }
+                        }}
+                    >
+                        Decrypt File
+                    </Button>
+                )}
 
                 <Button
                     size="small"

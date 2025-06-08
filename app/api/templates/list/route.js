@@ -17,12 +17,16 @@ export async function GET() {
     const templates = [];
 
     for (const file of files) {
-      const filePath = path.join(templatesDir, file);
+      const directPath = path.join(templatesDir, file);
       try {
-        const content = fs.readFileSync(filePath, 'utf-8');
+        const content = fs.readFileSync(directPath, 'utf-8');
         const json = JSON.parse(content);
+
         if (json?.name) {
-          templates.push(json);
+          templates.push({
+            ...json,
+            fullPath: directPath,
+          });
         } else {
           console.warn(`Skipping ${file} — missing "name" key`);
         }

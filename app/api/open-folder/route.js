@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import path from 'path';
 
-export async function GET(req) {
+export async function POST(req) {
     if (process.env.NODE_ENV !== 'development') {
         return NextResponse.json({ error: 'Only allowed in development' }, { status: 403 });
     }
 
     const {
         folderPath
-    } = Object.fromEntries(req.nextUrl.searchParams)
+    } = await req.json()
 
     if (!folderPath) {
         return NextResponse.json({ error: 'Need folderPath' }, { status: 400 });

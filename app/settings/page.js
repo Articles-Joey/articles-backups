@@ -16,6 +16,9 @@ export default function Page() {
 
     const resetStore = useSiteStore((state) => state.resetStore);
 
+    const awsUploadLocation = useSiteStore((state) => state.awsUploadLocation);
+    const setAwsUploadLocation = useSiteStore((state) => state.setAwsUploadLocation);
+
     const [newLocation, setNewLocation] = useState('');
 
     return (
@@ -153,6 +156,19 @@ export default function Page() {
                             >
                                 Connect
                             </Button>
+                            {/* AWS Upload Location input for AWS: S3 only */}
+                            {provider_obj.name === 'AWS: S3' && (
+                                <Box sx={{ mt: 1 }}>
+                                    <TextField
+                                        label="AWS Upload Location (S3 URI)"
+                                        size="small"
+                                        fullWidth
+                                        value={awsUploadLocation}
+                                        onChange={e => setAwsUploadLocation(e.target.value)}
+                                        sx={{ mb: 1 }}
+                                    />
+                                </Box>
+                            )}
                         </Box>
                     )
                 })}
