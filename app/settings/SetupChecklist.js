@@ -32,8 +32,8 @@ export default function SetupChecklist() {
 
     // Step completion logic
     const hasLocalBackup = backups && backups.length > 0;
-    const hasOffsite = storageLocations && storageLocations.length > 1;
-    const hasCloud = awsS3List && Array.isArray(awsS3List.files) && awsS3List.files.length > 0;
+    const hasOffsite = storageLocations && storageLocations.length > 0;
+    const hasCloud = awsS3List && Array.isArray(awsS3List) && awsS3List.length > 0;
 
     const steps = [
         // {
