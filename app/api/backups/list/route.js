@@ -21,6 +21,7 @@ function getBackupDetailsFromDir(backupsDir) {
           const json = JSON.parse(content);
           json.directDetailsPath = path.join(backupsDir, subfolder, timestamp, 'details.json');
           json.directPath = path.join(backupsDir, subfolder, timestamp);
+          json.templatePath = path.join(subfolder, timestamp);
           detailsList.push(json);
         } catch (err) {
           console.warn(`Failed to parse details.json in ${subfolder}/${timestamp}:`, err);

@@ -19,19 +19,53 @@ import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarIcon from '@mui/icons-material/Star';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { useInstallLocation } from "@/components/hooks/useInstallLocation";
+import { useSiteStore } from "@/components/stores/useSiteStore";
+import { useBackupsAwsS3 } from "@/components/hooks/useBackupsAwsS3";
 
-export default function BackupsList() {
+export default function BackupsList({ backups: propBackups }) {
     const {
         data: backups,
         isLoading: backupsIsLoading,
         mutate: mutateBackups,
     } = useBackups();
 
+    // Use propBackups if provided (for filtering), otherwise use hook
+    const displayBackups = propBackups || backups;
+
+    const awsUploadLocation = useSiteStore((state) => state.awsUploadLocation);
+    const { data: awsS3List, isLoading: awsS3Loading, isError: awsS3Error } = useBackupsAwsS3(awsUploadLocation);
+
     return (
         <div>
-            {backups.map((backup) => (
+            {/* AWS S3 List Output (for demonstration) */}
+            {awsUploadLocation && (
+                <Box sx={{ mb: 2, p: 2, borderBottom: '1px solid gray' }}>
+                    <Typography variant="subtitle2">AWS S3 Files at {awsUploadLocation}:</Typography>
+                    {awsS3Loading && <Typography>Loading S3 files...</Typography>}
+                    {awsS3Error && <Typography color="error">Error loading S3 files</Typography>}
+                    {awsS3List && Array.isArray(awsS3List) && (
+                        <Box sx={{ maxHeight: 200, overflow: 'auto', background: '#222', color: '#fff', p: 1, borderRadius: 1 }}>
+                            {awsS3List.length === 0 && <Typography sx={{ color: '#fff' }}>No files found.</Typography>}
+                            {awsS3List.map((file, idx) => (
+                                <Box key={file.key + idx} sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                                    <Typography sx={{ flex: 1, color: '#fff', fontSize: 13 }}>
+                                        {file.key}
+                                    </Typography>
+                                    <Typography sx={{ color: '#aaa', fontSize: 12, ml: 2 }}>
+                                        {filesize(file.size, { standard: "jedec" })}
+                                    </Typography>
+                                    <Typography sx={{ color: '#aaa', fontSize: 12, ml: 2 }}>
+                                        {file.lastModified ? new Date(file.lastModified).toLocaleString() : ''}
+                                    </Typography>
+                                </Box>
+                            ))}
+                        </Box>
+                    )}
+                </Box>
+            )}
+            {displayBackups.map((backup, i) => (
                 <BackupItem
-                    key={`${backup.name}-${backup.date}`}
+                    key={`${backup.name}-${i}-${backup.date}`}
                     backup={backup}
                     onDeleteConfirmed={mutateBackups}
                 />
@@ -57,6 +91,10 @@ function BackupItem({ backup, onDeleteConfirmed }) {
         // isLoading: backupsIsLoading,
         // mutate: mutateBackups,
     } = useInstallLocation();
+
+    const awsUploadLocation = useSiteStore((state) => state.awsUploadLocation);
+
+    const { data: awsS3List, isLoading: awsS3Loading, isError: awsS3Error } = useBackupsAwsS3(awsUploadLocation);
 
     const handleDelete = async () => {
 
@@ -322,38 +360,38 @@ function BackupItem({ backup, onDeleteConfirmed }) {
                     </Button>
                 )}
                 {
-                // backup.directPath 
-                // && 
-                // backup.directPath.endsWith('.enc') 
-                backup.encrypted
-                && (
-                    <Button
-                        size="small"
-                        color="secondary"
-                        variant="outlined"
-                        sx={{ ml: 1 }}
-                        onClick={async () => {
-                            try {
-                                const res = await fetch('/api/file-decrypt', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ filePath: backup.directPath }),
-                                });
-                                const data = await res.json();
-                                if (res.ok) {
-                                    setToast({ open: true, message: 'File decrypted!', severity: 'success' });
-                                    mutateBackups();
-                                } else {
-                                    setToast({ open: true, message: 'Error: ' + data.error, severity: 'error' });
+                    // backup.directPath 
+                    // && 
+                    // backup.directPath.endsWith('.enc') 
+                    backup.encrypted
+                    && (
+                        <Button
+                            size="small"
+                            color="secondary"
+                            variant="outlined"
+                            sx={{ ml: 1 }}
+                            onClick={async () => {
+                                try {
+                                    const res = await fetch('/api/file-decrypt', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ filePath: backup.directPath }),
+                                    });
+                                    const data = await res.json();
+                                    if (res.ok) {
+                                        setToast({ open: true, message: 'File decrypted!', severity: 'success' });
+                                        mutateBackups();
+                                    } else {
+                                        setToast({ open: true, message: 'Error: ' + data.error, severity: 'error' });
+                                    }
+                                } catch (err) {
+                                    setToast({ open: true, message: 'Unexpected error: ' + err.message, severity: 'error' });
                                 }
-                            } catch (err) {
-                                setToast({ open: true, message: 'Unexpected error: ' + err.message, severity: 'error' });
-                            }
-                        }}
-                    >
-                        Decrypt File
-                    </Button>
-                )}
+                            }}
+                        >
+                            Decrypt File
+                        </Button>
+                    )}
 
                 <Button
                     size="small"
@@ -362,6 +400,38 @@ function BackupItem({ backup, onDeleteConfirmed }) {
                     onClick={() => handleFavorite(backup.directDetailsPath)}
                 >
                     {backup.favorite ? <StarIcon /> : <StarOutlineIcon />}
+                </Button>
+
+                <Button
+                    size="small"
+                    color="info"
+                    variant="outlined"
+                    sx={{ ml: 1 }}
+                    disabled={!awsUploadLocation}
+                    onClick={async () => {
+                        try {
+                            const res = await fetch('/api/aws/upload', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    templatePath: backup.templatePath,
+                                    localPath: backup.directPath,
+                                    s3Uri: awsUploadLocation
+                                })
+                            });
+                            const data = await res.json();
+                            if (res.ok) {
+                                setToast({ open: true, message: 'Backup uploaded to AWS!', severity: 'success' });
+                            } else {
+                                setToast({ open: true, message: 'AWS upload error: ' + data.error, severity: 'error' });
+                            }
+                        } catch (err) {
+                            setToast({ open: true, message: 'Unexpected AWS upload error: ' + err.message, severity: 'error' });
+                        }
+                    }}
+                >
+                    {awsS3List && awsS3List.some(file => file.key.includes(backup.templatePath.replace(/\\/g, '/'))) ? 'Uploaded' : 'Upload to AWS'}
+                    {/* Upload to AWS */}
                 </Button>
             </Box>
 

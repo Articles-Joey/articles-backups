@@ -1,7 +1,7 @@
 "use client"
 
-import { Box, Button, Card, CircularProgress, Stack, TextField, Tooltip, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import { Box, Button, Card, CircularProgress, Stack, TextField, Tooltip, Typography, Modal } from "@mui/material";
+import { useEffect, useState, useMemo } from "react";
 
 import { useBackupTemplates } from '@/components/hooks/useBackupTemplates';
 
@@ -73,6 +73,26 @@ export default function Page() {
     // isLoading: backupsIsLoading,
     // mutate: mutateBackups,
   } = useInstallLocation();
+
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+
+  // Filtered backups based on searchValue and favorite toggle
+  const filteredBackups = useMemo(() => {
+    let result = backups;
+    if (searchValue) {
+      const lower = searchValue.toLowerCase();
+      result = result?.filter(b =>
+        (b.name && b.name.toLowerCase().includes(lower)) ||
+        (b.directPath && b.directPath.toLowerCase().includes(lower))
+      );
+    }
+    if (showFavoritesOnly) {
+      result = result?.filter(b => b.favorite);
+    }
+    return result;
+  }, [backups, searchValue, showFavoritesOnly]);
 
   return (
     <div className="page no-padding backups-page">
@@ -291,6 +311,17 @@ export default function Page() {
 
               }}
             >
+              Crypto.js
+            </Button>
+
+            <Button
+              variant={'outlined'}
+              color="primary"
+              disabled
+              onClick={async () => {
+
+              }}
+            >
               VeraCrypt
             </Button>
 
@@ -398,61 +429,65 @@ export default function Page() {
 
             >
 
-              <Button
-                variant="contained"
-                color="primary"
-                size="small"
-                onClick={async () => {
-                  try {
-                    const res = await fetch('/api/open-backups', {
-                      method: 'GET',
-                    });
+              <Tooltip title="Open Backups">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch('/api/open-backups', {
+                        method: 'GET',
+                      });
 
-                    const data = await res.json();
+                      const data = await res.json();
 
-                    if (res.ok) {
-                      console.log('Success:', data);
-                    } else {
-                      console.error('Error:', data.error);
-                      alert(`Error: ${data.error}`);
+                      if (res.ok) {
+                        console.log('Success:', data);
+                      } else {
+                        console.error('Error:', data.error);
+                        alert(`Error: ${data.error}`);
+                      }
+                    } catch (err) {
+                      console.error('Unexpected error:', err);
+                      alert('An unexpected error occurred.');
                     }
-                  } catch (err) {
-                    console.error('Unexpected error:', err);
-                    alert('An unexpected error occurred.');
-                  }
-                }}
-              >
-                <FindInPageIcon />
-                Backups
-              </Button>
+                  }}
+                >
+                  <FindInPageIcon />
+                  {/* Backups */}
+                </Button>
+              </Tooltip>
 
-              <Button
-                variant="contained"
-                color="primary"
-                size="small"
-                onClick={async () => {
-                  try {
-                    const res = await fetch('/api/open-backup-templates', {
-                      method: 'GET',
-                    });
+              <Tooltip title="Open Templates">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch('/api/open-backup-templates', {
+                        method: 'GET',
+                      });
 
-                    const data = await res.json();
+                      const data = await res.json();
 
-                    if (res.ok) {
-                      console.log('Success:', data);
-                    } else {
-                      console.error('Error:', data.error);
-                      alert(`Error: ${data.error}`);
+                      if (res.ok) {
+                        console.log('Success:', data);
+                      } else {
+                        console.error('Error:', data.error);
+                        alert(`Error: ${data.error}`);
+                      }
+                    } catch (err) {
+                      console.error('Unexpected error:', err);
+                      alert('An unexpected error occurred.');
                     }
-                  } catch (err) {
-                    console.error('Unexpected error:', err);
-                    alert('An unexpected error occurred.');
-                  }
-                }}
-              >
-                <FindInPageIcon />
-                Templates
-              </Button>
+                  }}
+                >
+                  <FindInPageIcon />
+                  {/* Templates */}
+                </Button>
+              </Tooltip>
 
             </Box>
 
@@ -461,6 +496,7 @@ export default function Page() {
                 variant="outlined"
                 color="primary"
                 size="small"
+                onClick={() => setSearchModalOpen(true)}
               >
                 Search & Filters
               </Button>
@@ -476,7 +512,6 @@ export default function Page() {
                   onClick={async () => {
                     mutateBackups()
                   }}
-                  title="Refresh Backups"
                 >
                   <RefreshIcon />
                 </Button>
@@ -490,7 +525,6 @@ export default function Page() {
                   onClick={async () => {
                     mutateTemplates()
                   }}
-                  title="Refresh Templates"
                 >
                   <RefreshIcon />
                 </Button>
@@ -498,6 +532,49 @@ export default function Page() {
             </Box>
 
           </Box>
+
+          <Modal
+            open={searchModalOpen}
+            onClose={() => setSearchModalOpen(false)}
+            aria-labelledby="search-modal-title"
+            aria-describedby="search-modal-desc"
+          >
+            <Box sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              bgcolor: 'background.paper',
+              boxShadow: 24,
+              p: 4,
+              borderRadius: 2,
+              minWidth: 300
+            }}>
+              <Typography id="search-modal-title" variant="h6" sx={{ mb: 2 }}>
+                Search Backups
+              </Typography>
+              <Box sx={{ mt: 2, mb: 2 }}>
+                <Button
+                  variant={showFavoritesOnly ? 'contained' : 'outlined'}
+                  color="primary"
+                  onClick={() => setShowFavoritesOnly(v => !v)}
+                  sx={{ minWidth: 120, width: '100%' }}
+                >
+                  {showFavoritesOnly ? 'Showing Favorites' : 'Show Favorites Only'}
+                </Button>
+              </Box>
+              <TextField
+                fullWidth
+                label="Search"
+                value={searchValue}
+                onChange={e => setSearchValue(e.target.value)}
+                autoFocus
+              />
+              <Box sx={{ mt: 2, textAlign: 'right' }}>
+                <Button onClick={() => setSearchModalOpen(false)} variant="contained">Close</Button>
+              </Box>
+            </Box>
+          </Modal>
 
           {backupsIsLoading &&
             <Box mt={8} sx={{ display: 'flex', justifyContent: "center", alignItems: 'center' }}>
@@ -507,7 +584,7 @@ export default function Page() {
           }
 
           {!backupsIsLoading && <>
-            {backups?.length > 0 ?
+            {filteredBackups?.length > 0 ?
               <Box
                 sx={{
                   mb: 1,
@@ -519,7 +596,7 @@ export default function Page() {
                   {backups?.length} Backups - {filesize(backups?.reduce((acc, b) => acc + b.size, 0))} total!
                 </Box> */}
 
-                <BackupsList />
+                <BackupsList backups={filteredBackups} />
 
               </Box>
               :

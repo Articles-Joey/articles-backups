@@ -81,6 +81,7 @@ This project is licensed under the [MIT License](LICENSE).
 ### Prerequisites
 - Node.js ≥ 22
 - npm
+- AWS CLI required for AWS S3 uploads
 
 ### Setup
 

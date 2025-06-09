@@ -1,9 +1,10 @@
 "use client"
 
 import { useSiteStore } from "@/components/stores/useSiteStore";
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { Box, Button, TextField, Typography, Modal, Container } from "@mui/material";
 import SetupChecklist from "./SetupChecklist";
 import { useState } from "react";
+import { useInstallLocation } from "@/components/hooks/useInstallLocation";
 
 export default function Page() {
 
@@ -20,159 +21,219 @@ export default function Page() {
     const setAwsUploadLocation = useSiteStore((state) => state.setAwsUploadLocation);
 
     const [newLocation, setNewLocation] = useState('');
+    const [confirmRemove, setConfirmRemove] = useState({ open: false, index: null });
+
+    const {
+        data: installLocation,
+        // isLoading: backupsIsLoading,
+        // mutate: mutateBackups,
+    } = useInstallLocation();
 
     return (
         <div className="page">
 
-            <SetupChecklist />
+            <Container>
 
-            <Button
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                    // addCount()
-                    resetStore()
-                }}
-                sx={{
-                    mb: 2
-                }}
-            >
-                Reset Zustand Store
-            </Button>
-
-            <Typography sx={{ mb: 5 }}>
-                Storage: {count}GB/10GB
-            </Typography>
-
-            <Typography sx={{ mb: 1 }}>
-                Locations:
-            </Typography>
-
-            <Typography sx={{ mb: 1 }}>
-                F:\My Documents\Sites\backup
-            </Typography>
-
-            {storageLocations.map((location_obj, location_i) => {
-                return (
-                    <div
-                        key={location_obj}
+                <SetupChecklist />
+    
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                        // addCount()
+                        resetStore()
+                    }}
+                    sx={{
+                        mb: 2
+                    }}
+                >
+                    Reset Zustand Store
+                </Button>
+    
+                <Typography sx={{ mb: 5 }}>
+                    Storage: {count}GB/10GB
+                </Typography>
+    
+                <Typography sx={{ mb: 1 }}>
+                    Backup Locations:
+                </Typography>
+    
+                <Box>
+                    <Typography sx={{ mb: 1 }}>
+                        {installLocation}
+                    </Typography>
+                    <Button
+                        color="warning"
+                        variant="contained"
+                        size="small"
+                        sx={{
+                            mb: 3
+                        }}
+                        disabled
                     >
-                        <Typography
-                            sx={{ mb: 1 }}
-                        >
-                            {location_obj}
-                        </Typography>
-                        <Button
-                            color="warning"
-                            variant="contained"
-                            size="small"
-                            sx={{
-                                mb: 3
-                            }}
-                            onClick={() => {
-                                removeStorageLocation(location_i)
-                            }}
-                        >
-                            removeStorageLocation
-                        </Button>
-                    </div>
-                )
-            })}
-
-            <TextField
-                value={newLocation}
-                size="small"
-                onChange={(e) => {
-                    setNewLocation(e.target.value)
-                }}
-            />
-
-            <Button
-                color="primary"
-                variant="contained"
-                sx={{
-                    mb: 3
-                }}
-                disabled={!newLocation}
-                onClick={() => {
-                    setNewLocation('')
-                    setStorageLocations([
-                        ...storageLocations,
-                        newLocation
-                    ])
-                }}
-            >
-                Add Location
-            </Button>
-
-            <Typography sx={{ mb: 2 }}>
-                Supported Cloud Backup Providers
-            </Typography>
-
-            <div>
-                {[
-                    {
-                        name: 'Articles Media: FS'
-                    },
-                    {
-                        name: 'AWS: S3'
-                    },
-                    {
-                        name: 'Cloudflare: R2'
-                    }
-                ].map(provider_obj => {
+                        Not removable (install location)
+                    </Button>
+                </Box>
+    
+                {storageLocations.map((location_obj, location_i) => {
                     return (
-                        <Box
-                            key={provider_obj.name}
-                            sx={{
-                                mb: 1
-                            }}
+                        <div
+                            key={location_obj}
                         >
                             <Typography
-                                sx={{
-                                    mb: 0
-                                }}
+                                sx={{ mb: 1 }}
                             >
-                                {provider_obj.name}
-                            </Typography>
-                            <Typography
-                                sx={{
-                                    mb: 0,
-                                    fontSize: '0.7rem'
-                                }}
-                            >
-                                Not connected
+                                {location_obj}
                             </Typography>
                             <Button
+                                color="warning"
                                 variant="contained"
                                 size="small"
-                                color="primary"
-                                onClick={() => {
-                                    addCount()
-                                }}
                                 sx={{
-                                    mb: 2
+                                    mb: 3
+                                }}
+                                onClick={() => {
+                                    setConfirmRemove({ open: true, index: location_i });
                                 }}
                             >
-                                Connect
+                                Remove
                             </Button>
-                            {/* AWS Upload Location input for AWS: S3 only */}
-                            {provider_obj.name === 'AWS: S3' && (
-                                <Box sx={{ mt: 1 }}>
-                                    <TextField
-                                        label="AWS Upload Location (S3 URI)"
-                                        size="small"
-                                        fullWidth
-                                        value={awsUploadLocation}
-                                        onChange={e => setAwsUploadLocation(e.target.value)}
-                                        sx={{ mb: 1 }}
-                                    />
-                                </Box>
-                            )}
-                        </Box>
+                        </div>
                     )
                 })}
-            </div>
+    
+                <Modal
+                    open={confirmRemove.open}
+                    onClose={() => setConfirmRemove({ open: false, index: null })}
+                    aria-labelledby="remove-location-modal-title"
+                    aria-describedby="remove-location-modal-desc"
+                >
+                    <Box sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        bgcolor: 'background.paper',
+                        boxShadow: 24,
+                        p: 4,
+                        borderRadius: 2,
+                        minWidth: 300
+                    }}>
+                        <Typography id="remove-location-modal-title" variant="h6" sx={{ mb: 2 }}>
+                            Remove Storage Location
+                        </Typography>
+                        <Typography id="remove-location-modal-desc" sx={{ mb: 2 }}>
+                            Are you sure you want to remove this storage location?
+                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                            <Button onClick={() => setConfirmRemove({ open: false, index: null })} variant="outlined">Cancel</Button>
+                            <Button color="error" variant="contained" onClick={() => {
+                                removeStorageLocation(confirmRemove.index);
+                                setConfirmRemove({ open: false, index: null });
+                            }}>Remove</Button>
+                        </Box>
+                    </Box>
+                </Modal>
+    
+                <TextField
+                    value={newLocation}
+                    size="small"
+                    onChange={(e) => {
+                        setNewLocation(e.target.value)
+                    }}
+                />
+    
+                <Button
+                    color="primary"
+                    variant="contained"
+                    sx={{
+                        mb: 3
+                    }}
+                    disabled={
+                        !newLocation ||
+                        !/^([a-zA-Z]:\\)/.test(newLocation)
+                    }
+                    onClick={() => {
+                        setNewLocation('')
+                        setStorageLocations([
+                            ...storageLocations,
+                            newLocation
+                        ])
+                    }}
+                >
+                    Add Location
+                </Button>
+    
+                <Typography sx={{ mb: 2 }}>
+                    Supported Cloud Backup Providers
+                </Typography>
+    
+                <div>
+                    {[
+                        {
+                            name: 'Articles Media: FS'
+                        },
+                        {
+                            name: 'AWS: S3'
+                        },
+                        {
+                            name: 'Cloudflare: R2'
+                        }
+                    ].map(provider_obj => {
+                        return (
+                            <Box
+                                key={provider_obj.name}
+                                sx={{
+                                    mb: 1
+                                }}
+                            >
+                                <Typography
+                                    sx={{
+                                        mb: 0
+                                    }}
+                                >
+                                    {provider_obj.name}
+                                </Typography>
+                                <Typography
+                                    sx={{
+                                        mb: 0,
+                                        fontSize: '0.7rem'
+                                    }}
+                                >
+                                    Not connected
+                                </Typography>
+                                <Button
+                                    variant="contained"
+                                    size="small"
+                                    color="primary"
+                                    onClick={() => {
+                                        addCount()
+                                    }}
+                                    sx={{
+                                        mb: 2
+                                    }}
+                                >
+                                    Connect
+                                </Button>
+                                {/* AWS Upload Location input for AWS: S3 only */}
+                                {provider_obj.name === 'AWS: S3' && (
+                                    <Box sx={{ mt: 1 }}>
+                                        <TextField
+                                            label="AWS Upload Location (S3 URI)"
+                                            size="small"
+                                            fullWidth
+                                            value={awsUploadLocation}
+                                            onChange={e => setAwsUploadLocation(e.target.value)}
+                                            sx={{ mb: 1 }}
+                                        />
+                                    </Box>
+                                )}
+                            </Box>
+                        )
+                    })}
+                </div>
+
+            </Container>
 
         </div>
     );

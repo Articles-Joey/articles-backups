@@ -17,7 +17,7 @@ export const useSiteStore = create()(
       setTermsOfUseAccepted: (value) => set({ termsOfUseAccepted: value }),
 
       storageLocations: [
-        'D:\\Articles Backups'
+        
       ],
       setStorageLocations: (value) => set({ storageLocations: value }),
       removeStorageLocation: (index) => {
@@ -33,7 +33,16 @@ export const useSiteStore = create()(
       toggleDarkMode: (value) => {
         const current = get().darkMode;
         set({ darkMode: !current })
-      }
+      },
+
+      backupsScheduling: true,
+      toggleBackupsScheduling: (value) => {
+        const current = get().backupsScheduling;
+        set({ backupsScheduling: !current })
+      },
+
+      showChecklist: true,
+      setShowChecklist: (value) => set({ showChecklist: value }),
 
     }),
     {

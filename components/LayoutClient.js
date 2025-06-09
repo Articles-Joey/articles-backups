@@ -55,7 +55,7 @@ export default function LayoutClient({ children }) {
             // },
             background: {
                 default: '#fff',
-                paper: '#fff',
+                paper: '#f2f2f2',
             },
         },
         components: {
