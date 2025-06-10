@@ -6,6 +6,8 @@
 
 ## 🚀 Features
 
+![Status page screenshot](public/pages/status.png)
+
 - Backup, Compress, and Encrypt your backups
 - Organize and search backups with favorites and metadata
 - Export backups to cloud providers
@@ -66,7 +68,7 @@ Security is a top priority. If you discover a vulnerability in this project:
 
 Articles Backups was created by ArticlesJoey as a side project. It's purpose is to assist in backup creation and management. Written in JavaScript and Node.JS it offers a lightweight backup manager in a easily understandable way. This allows easier contribution and lower attack vectors.
 
-Maintained by [Your Name](https://github.com/yourusername) and open to contributions from the community.
+Maintained by [ArticlesJoey](https://github.com/Articles-Joey) and open to contributions from the community.
 
 ---
 

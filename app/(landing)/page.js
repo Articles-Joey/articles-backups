@@ -61,7 +61,7 @@ export default function Home() {
 
       <footer className={styles.footer}>
         <a
-          href=""
+          href="https://github.com/Articles-Joey/articles-backups"
           target="_blank"
           rel="noopener noreferrer"
         >
