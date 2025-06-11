@@ -58,8 +58,7 @@ Please read through our [Contributing Guide](CONTRIBUTING.md) for details on how
 
 Security is a top priority. If you discover a vulnerability in this project:
 
-- **Do not** open a public issue.
-- Please responsibly disclose it by emailing [youremail@example.com] or submitting it via our [security disclosure form](#) (coming soon).
+- Please responsibly disclose it by emailing me via my bio or submitting it via an issue. Public issues should be okay as I am assuming peoples self hosting setups would cover security via access control at a higher level.
 - We will respond as quickly as possible and coordinate a fix.
 
 ---
@@ -88,7 +87,7 @@ This project is licensed under the [MIT License](LICENSE).
 ### Setup
 
 ```bash
-git clone https://github.com/todo/articles-backups.git
+git clone https://github.com/Articles-Joey/articles-backups.git
 cd articles-backups
 npm install
 npm run dev
