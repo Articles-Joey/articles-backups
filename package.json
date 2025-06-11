@@ -6,6 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
+    "app": "electron ./electron/main.js",
     "lint": "next lint"
   },
   "dependencies": {
@@ -28,6 +29,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/node": "22.15.29",
+    "electron": "^36.4.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.3"
   }
