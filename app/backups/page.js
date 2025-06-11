@@ -15,7 +15,7 @@ import { useSiteStore } from "@/components/stores/useSiteStore";
 import { useInstallLocation } from "@/components/hooks/useInstallLocation";
 
 import "@/styles/pages/backups.scss";
-import { Add, Delete, Settings } from "@mui/icons-material";
+import { Add, Close, Delete, Settings } from "@mui/icons-material";
 import BackupTemplateListItem from "./BackupTemplateListItem";
 import NewBackupTemplate from "./NewBackupTemplateListItem";
 
@@ -33,7 +33,7 @@ export default function Page() {
   const [backupTemplate, setBackupTemplate] = useState(null);
   const [editBackupTemplate, setEditBackupTemplate] = useState(null);
 
-  const [newBackupTemplate, setNewBackupTemplate] = useState('');
+  const [newBackupTemplate, setNewBackupTemplate] = useState(false);
 
   const [downloadLocation, setDownloadLocation] = useState(null);
 
@@ -46,9 +46,11 @@ export default function Page() {
     type: false
   });
 
-  const [encryptionOptions, setEncryptionOptions] = useState({
+  const initialEncryptionOptions = {
     type: false
-  });
+  }
+
+  const [encryptionOptions, setEncryptionOptions] = useState(initialEncryptionOptions);
 
   const [cloudOptions, setCloudOptions] = useState({
     type: false
@@ -93,6 +95,13 @@ export default function Page() {
     }
     return result;
   }, [backups, searchValue, showFavoritesOnly]);
+
+  const activeFilters = useMemo(() => {
+    let count = 0;
+    if (searchValue) count++;
+    if (showFavoritesOnly) count++;
+    return count;
+  }, [searchValue, showFavoritesOnly]);
 
   return (
     <div className="page no-padding backups-page">
@@ -142,7 +151,10 @@ export default function Page() {
                   variant={template_obj.name == backupTemplate?.name ? 'contained' : 'outlined'}
                   color="primary"
                   onClick={async () => {
-                    setBackupTemplate(template_obj)
+                    backupTemplate?.name == template_obj.name ?
+                      setBackupTemplate(null)
+                      :
+                      setBackupTemplate(template_obj)
                   }}
                 >
                   {template_obj.name}
@@ -209,199 +221,252 @@ export default function Page() {
             </>
           )}
 
-          <Typography sx={{ mb: 1 }}>
-            Download Location:
-          </Typography>
+          {backupTemplate && <>
+            <Typography sx={{ mb: 1 }}>
+              Download Location:
+            </Typography>
 
-          <Box sx={{ mb: 2 }}>
+            <Box sx={{ mb: 2 }}>
 
-            <Button
-              variant={downloadLocation == installLocation ? 'contained' : 'outlined'}
-              color="primary"
-              onClick={async () => {
-                setDownloadLocation(installLocation)
-              }}
-            >
-              {installLocation}
-            </Button>
+              <Button
+                variant={downloadLocation == installLocation ? 'contained' : 'outlined'}
+                color="primary"
+                onClick={async () => {
+                  setDownloadLocation(installLocation)
+                }}
+              >
+                {installLocation}
+              </Button>
 
-            {storageLocations?.map(template_obj => {
-              return (
-                <Button
-                  key={template_obj}
-                  variant={template_obj == downloadLocation ? 'contained' : 'outlined'}
-                  color="primary"
-                  onClick={async () => {
-                    setDownloadLocation(template_obj)
-                  }}
-                >
-                  {template_obj}
-                </Button>
-              )
-            })}
+              {storageLocations?.map(template_obj => {
+                return (
+                  <Button
+                    key={template_obj}
+                    variant={template_obj == downloadLocation ? 'contained' : 'outlined'}
+                    color="primary"
+                    onClick={async () => {
+                      setDownloadLocation(template_obj)
+                    }}
+                  >
+                    {template_obj}
+                  </Button>
+                )
+              })}
 
-          </Box>
+            </Box>
 
-          <Typography sx={{ mb: 1 }}>
-            Compression Options
-          </Typography>
+            <Typography sx={{ mb: 1 }}>
+              Compression Options
+            </Typography>
 
-          <Box sx={{ mb: 2 }}>
+            <Box sx={{ mb: 2 }}>
 
-            <Button
-              variant={!compressionOptions?.type ? 'contained' : 'outlined'}
-              color="primary"
-              onClick={async () => {
-                setCompressionOptions({
-                  ...compressionOptions,
-                  type: false
-                })
-              }}
-            >
-              None
-            </Button>
-            <Button
-              variant={compressionOptions?.type == "ZIP" ? 'contained' : 'outlined'}
-              color="primary"
-              onClick={async () => {
-                setCompressionOptions({
-                  ...compressionOptions,
-                  type: "ZIP"
-                })
-              }}
-            >
-              ZIP
-            </Button>
-            {/* <Button
-              variant={'outlined'}
-              color="primary"
-              onClick={async () => {
-                
-              }}
-            >
-              GZ
-            </Button> */}
+              <Button
+                variant={!compressionOptions?.type ? 'contained' : 'outlined'}
+                color="primary"
+                onClick={async () => {
+                  setCompressionOptions({
+                    ...compressionOptions,
+                    type: false
+                  })
+                }}
+              >
+                None
+              </Button>
+              <Button
+                variant={compressionOptions?.type == "ZIP" ? 'contained' : 'outlined'}
+                color="primary"
+                onClick={async () => {
+                  setCompressionOptions({
+                    ...compressionOptions,
+                    type: "ZIP"
+                  })
+                }}
+              >
+                ZIP
+              </Button>
+              {/* <Button
+                variant={'outlined'}
+                color="primary"
+                onClick={async () => {
+                  
+                }}
+              >
+                GZ
+              </Button> */}
 
-          </Box>
+            </Box>
 
-          <Typography sx={{ mb: 0 }}>
-            Encryption Options
-          </Typography>
+            <Typography sx={{ mb: 0 }}>
+              Encryption Options
+            </Typography>
 
-          <Typography sx={{ mb: 1, fontSize: '0.8rem' }}>
-            Setup encryption options in the settings
-          </Typography>
+            <Typography sx={{ mb: 1, fontSize: '0.8rem' }}>
+              Setup encryption options in the settings
+            </Typography>
 
-          <Box sx={{ mb: 2 }}>
+            <Box sx={{ mb: 2 }}>
 
-            <Button
-              variant={'outlined'}
-              color="primary"
-              onClick={async () => {
-
-              }}
-            >
-              None
-            </Button>
-
-            <Button
-              variant={'outlined'}
-              color="primary"
-              onClick={async () => {
-
-              }}
-            >
-              Crypto.js
-            </Button>
-
-            <Button
-              variant={'outlined'}
-              color="primary"
-              disabled
-              onClick={async () => {
-
-              }}
-            >
-              VeraCrypt
-            </Button>
-
-          </Box>
-
-          <Typography sx={{ mb: 0 }}>
-            Cloud Upload
-          </Typography>
-
-          <Typography sx={{ mb: 1, fontSize: '0.8rem' }}>
-            Upload the finished backup to a cloud provider?
-          </Typography>
-
-          <Box sx={{ mb: 2 }}>
-
-            <Button
-              variant={'outlined'}
-              color="primary"
-              onClick={async () => {
-
-              }}
-            >
-              None
-            </Button>
-
-            <Button
-              variant={'outlined'}
-              color="primary"
-              onClick={async () => {
-
-              }}
-            >
-              S3
-            </Button>
-
-          </Box>
-
-          <Box
-            sx={{
-              mb: 2,
-              mt: 4
-            }}
-          >
-            <Button
-              variant="contained"
-              color="primary"
-              disabled={!backupTemplate || !downloadLocation}
-              onClick={async () => {
-                try {
-                  const res = await fetch('/api/backups/create', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                      backupTemplate,
-                      downloadLocation
-                    }),
+              <Button
+                variant={!encryptionOptions?.type ? 'contained' : 'outlined'}
+                color="primary"
+                onClick={async () => {
+                  setEncryptionOptions({
+                    ...encryptionOptions,
+                    type: false
                   });
+                }}
+              >
+                None
+              </Button>
 
-                  const data = await res.json();
+              <Button
+                variant={encryptionOptions?.type == "Crypto.js" ? 'contained' : 'outlined'}
+                color="primary"
+                onClick={async () => {
+                  setEncryptionOptions({
+                    ...encryptionOptions,
+                    type: "Crypto.js"
+                  });
+                }}
+              >
+                Crypto.js
+              </Button>
 
-                  if (res.ok) {
-                    console.log('Success:', data);
-                    mutateBackups()
-                    // alert(`Backup folder created: ${data.folder}`);
-                  } else {
-                    console.error('Error:', data.error);
-                    alert(`Error: ${data.error}`);
-                  }
-                } catch (err) {
-                  console.error('Unexpected error:', err);
-                  alert('An unexpected error occurred.');
-                }
+              <Button
+                variant={'outlined'}
+                color="primary"
+                disabled
+                onClick={async () => {
+                  setEncryptionOptions({
+                    ...encryptionOptions,
+                    type: "VeraCrypt"
+                  });
+                }}
+              >
+                VeraCrypt
+              </Button>
+
+            </Box>
+
+            <Typography sx={{ mb: 0 }}>
+              Cloud Upload
+            </Typography>
+
+            <Typography sx={{ mb: 1, fontSize: '0.8rem' }}>
+              Upload the finished backup to a cloud provider?
+            </Typography>
+
+            <Box sx={{ mb: 2 }}>
+
+              <Button
+                variant={!cloudOptions?.type ? 'contained' : 'outlined'}
+                color="primary"
+                onClick={async () => {
+                  setCloudOptions({
+                    type: false
+                  });
+                }}
+              >
+                None
+              </Button>
+
+              <Button
+                variant={cloudOptions?.type == "AWS S3" ? 'contained' : 'outlined'}
+                color="primary"
+                onClick={async () => {
+                  setCloudOptions({
+                    type: "AWS S3"
+                  });
+                }}
+              >
+                S3
+              </Button>
+
+            </Box>
+
+            <Box
+              sx={{
+                mb: 2,
+                mt: 4
               }}
             >
-              Create Backup
-            </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                disabled={!backupTemplate || !downloadLocation}
+                onClick={async () => {
+                  try {
+                    const res = await fetch('/api/backups/create', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        backupTemplate,
+                        downloadLocation
+                      }),
+                    });
 
-          </Box>
+                    const data = await res.json();
+
+                    if (res.ok) {
+                      console.log('Success:', data);
+                      mutateBackups()
+                      setBackupTemplate(null);
+                      setDownloadLocation(null);
+
+                      if (compressionOptions?.type == "ZIP") {
+
+                        console.log("TODO")
+
+                        // return
+
+                        try {
+                          const res = await fetch('/api/backups/compress', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                              folderPath: data.folder,
+                            }),
+                          });
+
+                          const compress_data = await res.json();
+
+                          if (res.ok) {
+                            console.log('Success:', compress_data);
+                            mutateBackups()
+                            setEncryptionOptions(initialEncryptionOptions);
+                            // alert(`Backup folder created: ${data.folder}`);
+                          } else {
+                            console.error('Error:', compress_data.error);
+                            alert(`Error: ${compress_data.error}`);
+                          }
+                        } catch (err) {
+                          console.error('Unexpected error:', err);
+                          alert('An unexpected error occurred.');
+                        }
+
+                      }
+
+                      // alert(`Backup folder created: ${data.folder}`);
+                    } else {
+                      console.error('Error:', data.error);
+                      alert(`Error: ${data.error}`);
+                    }
+                  } catch (err) {
+                    console.error('Unexpected error:', err);
+                    alert('An unexpected error occurred.');
+                  }
+                }}
+              >
+                Create Backup
+              </Button>
+
+            </Box>
+          </>}
 
         </Box>
 
@@ -434,6 +499,7 @@ export default function Page() {
                   variant="contained"
                   color="primary"
                   size="small"
+                  sx={{ minWidth: 20, }}
                   onClick={async () => {
                     try {
                       const res = await fetch('/api/open-backups', {
@@ -464,6 +530,7 @@ export default function Page() {
                   variant="contained"
                   color="primary"
                   size="small"
+                  sx={{ minWidth: 20, }}
                   onClick={async () => {
                     try {
                       const res = await fetch('/api/open-backup-templates', {
@@ -499,7 +566,24 @@ export default function Page() {
                 onClick={() => setSearchModalOpen(true)}
               >
                 Search & Filters
+                ({
+                  activeFilters
+                })
               </Button>
+              {activeFilters > 0 &&
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  size="small"
+                  onClick={() => {
+                    setSearchValue("");
+                    setShowFavoritesOnly(false);
+                  }}
+                  sx={{ ml: 1 }}
+                >
+                  <Close />
+                </Button>
+              }
             </Box>
 
             <Box>
@@ -509,6 +593,7 @@ export default function Page() {
                   variant="contained"
                   color="primary"
                   size="small"
+                  sx={{ minWidth: 20, }}
                   onClick={async () => {
                     mutateBackups()
                   }}
@@ -522,6 +607,7 @@ export default function Page() {
                   variant="contained"
                   color="primary"
                   size="small"
+                  sx={{ minWidth: 20, }}
                   onClick={async () => {
                     mutateTemplates()
                   }}

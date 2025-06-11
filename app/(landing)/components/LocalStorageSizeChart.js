@@ -4,6 +4,7 @@ import { subDays, format } from "date-fns";
 import * as React from 'react';
 import { LineChart } from '@mui/x-charts/LineChart';
 import { useBackups } from "../../../components/hooks/useBackups";
+import { filesize } from "filesize";
 
 const margin = { right: 24 };
 
@@ -38,10 +39,15 @@ export default function LocalStorageSizeChart() {
     <LineChart
       height={300}
       series={[
-        { data: dailySizes, label: 'Local Storage Size', color: 'green' },
+        {
+          data: dailySizes,
+          label: 'Local Storage Size',
+          color: 'green',
+          valueFormatter: (v) => filesize(v),
+        },
       ]}
       xAxis={[{ scaleType: 'point', data: days }]}
-      yAxis={[{ width: 50 }]}
+      yAxis={[{ width: 50, valueFormatter: (v) => filesize(v) }]}
       margin={margin}
       sx={{
         backgroundColor: 'background.paper',

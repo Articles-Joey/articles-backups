@@ -101,7 +101,14 @@ export default function LayoutClient({ children }) {
                         <Typography
                             variant="body2"
                         >
-                            Text
+                            This application is provided as open source software for personal and educational use. By using this application, you agree that:
+                            <ul style={{ marginTop: 8, marginBottom: 8 }}>
+                                <li>The software is provided “as is”, without warranty of any kind.</li>
+                                <li>The authors and contributors are not liable for any damages or data loss resulting from the use of this application.</li>
+                                <li>You are responsible for complying with all applicable laws and regulations regarding your data and backups.</li>
+                                <li>You may use, modify, and distribute this software under the terms of the project’s open source license.</li>
+                            </ul>
+                            If you do not agree to these terms, please do not use this application.
                         </Typography>
                     </DialogContent>
                     <DialogActions>

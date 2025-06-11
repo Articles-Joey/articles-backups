@@ -1,6 +1,6 @@
 # 🗃️ Articles Backups
 
-**Articles Backups** is an open-source web app built with **React.js**, **Next.js**, and **Node.js** that helps users securely back up and manage saved articles from the web. Whether you're doing research, collecting essays, or archiving important reads, Articles Backups ensures your content stays safe and organized — all in one place.
+**Articles Backups** is an open-source web app built with **React.js**, **Next.js**, and **Node.js** that helps users securely back up and manage saved files and folders.
 
 ---
 
@@ -8,7 +8,7 @@
 
 ![Status page screenshot](public/pages/status.png)
 
-- Backup, Compress, and Encrypt your backups
+- Backup, Compress, and Encrypt your files and folders
 - Organize and search backups with favorites and metadata
 - Export backups to cloud providers
 - RESTful API for integration and automation
