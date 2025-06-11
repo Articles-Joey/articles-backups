@@ -2,7 +2,7 @@
 
 import { subDays, format } from "date-fns";
 import * as React from 'react';
-import { LineChart } from '@mui/x-charts/LineChart';
+import { BarChart } from '@mui/x-charts/BarChart';
 import { useBackups } from "../../../components/hooks/useBackups";
 
 const margin = { right: 24 };
@@ -29,12 +29,12 @@ export default function SimpleLineChart() {
   });
 
   return (
-    <LineChart
+    <BarChart
       height={300}
       series={[
         { data: backupCounts, label: 'Backups per Day' },
       ]}
-      xAxis={[{ scaleType: 'point', data: days }]}
+      xAxis={[{ scaleType: 'band', data: days }]}
       yAxis={[{ width: 50 }]}
       margin={margin}
       sx={{

@@ -8,11 +8,11 @@ export async function POST(req: Request) {
     }
 
     try {
-        const { fileName, locations, schedule_frequency } = await req.json();
+        const { fileName, locations, schedule_frequency, schedule_time } = await req.json();
 
         if (
-            !fileName || typeof fileName !== 'string' ||
-            !Array.isArray(locations)
+            !fileName || typeof fileName !== 'string'
+            // !Array.isArray(locations)
         ) {
             return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
         }
@@ -36,8 +36,19 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Invalid JSON content' }, { status: 500 });
         }
 
-        currentData.locations = locations;
-        currentData.schedule_frequency = schedule_frequency;
+        // currentData.locations = locations;
+
+        if (Array.isArray(locations)) {
+            currentData.locations = locations;
+        }  
+
+        if (schedule_frequency) {
+            currentData.schedule_frequency = schedule_frequency;
+        }
+        
+        if (schedule_time) {
+            currentData.schedule_time = schedule_time;
+        }
 
         fs.writeFileSync(filePath, JSON.stringify(currentData, null, 2), 'utf-8');
 

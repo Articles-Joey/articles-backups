@@ -7,6 +7,7 @@ import BedtimeIcon from '@mui/icons-material/Bedtime';
 import SunnyIcon from '@mui/icons-material/Sunny';
 import { useSiteStore } from "./stores/useSiteStore";
 import { Box } from "@mui/material";
+import Image from "next/image";
 
 export default function Navbar() {
 
@@ -21,8 +22,8 @@ export default function Navbar() {
             <div className="background"></div>
 
             <Link href="/" className="brand-wrap">
-
-                <img
+            
+                <Image
                     src="/icon.png"
                     width={50}
                     height={50}

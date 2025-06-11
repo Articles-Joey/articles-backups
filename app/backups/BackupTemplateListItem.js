@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { parse, format, isValid } from 'date-fns';
 
 const { useBackupTemplates } = require("@/components/hooks/useBackupTemplates");
 const { Delete } = require("@mui/icons-material");
@@ -24,7 +26,7 @@ export default function BackupTemplateListItem({
             setBackupTemplate(templates.find(obj => obj.name == backupTemplate?.name))
         }
 
-    }, [backupTemplate, templates])
+    }, [backupTemplate, templates, setBackupTemplate])
 
     const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -144,7 +146,7 @@ export default function BackupTemplateListItem({
                                     size="small"
                                     variant={
                                         (backupTemplate?.schedule_frequency === obj.value) ||
-                                        (obj.value === 'None' && !backupTemplate?.schedule_frequency)
+                                            (obj.value === 'None' && !backupTemplate?.schedule_frequency)
                                             ? 'contained'
                                             : 'outlined'
                                     }
@@ -176,6 +178,77 @@ export default function BackupTemplateListItem({
                             )
                         })}
                     </Box>
+
+                    {/* Time Picker for backup time */}
+                    <Typography sx={{ mb: 1 }}>
+                        Backup Time:
+                    </Typography>
+                    <div>
+                        <TimePicker
+                            label="Backup Time"
+                            value={backupTemplate?.schedule_time ? parse(backupTemplate.schedule_time, 'HH:mm', new Date()) : null}
+                            onChange={async (newValue) => {
+                                if (!newValue || !isValid(newValue)) return;
+                                const newTime = format(newValue, 'HH:mm');
+                                try {
+                                    const res = await fetch(`/api/templates/edit`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            fileName: `${backupTemplate?.name}.json`,
+                                            schedule_time: newTime
+                                        })
+                                    });
+                                    const data = await res.json();
+                                    if (res.ok) {
+                                        setBackupTemplate({ ...backupTemplate, schedule_time: newTime });
+                                        mutateTemplates();
+                                    } else {
+                                        alert('Error: ' + data.error);
+                                    }
+                                } catch (err) {
+                                    alert('Unexpected error: ' + err.message);
+                                }
+                            }}
+                            // ampm={false}
+                            sx={{ mb: 0, width: 180 }}
+                        />
+                    </div>
+                    <Typography sx={{ mb: 2, display: 'block' }} variant="caption" color="textSecondary">
+                        Defaults to 12:00 AM if not set.
+                    </Typography>
+                    
+                    {/* Fallback text field for time (optional, can be removed) */}
+                    {/* <TextField
+                        type="time"
+                        size="small"
+                        value={backupTemplate?.schedule_time || ""}
+                        onChange={async (e) => {
+                            const newTime = e.target.value;
+                            try {
+                                const res = await fetch(`/api/templates/edit`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        fileName: `${backupTemplate?.name}.json`,
+                                        schedule_time: newTime
+                                    })
+                                });
+                                const data = await res.json();
+                                if (res.ok) {
+                                    setBackupTemplate({ ...backupTemplate, schedule_time: newTime });
+                                    mutateTemplates();
+                                } else {
+                                    alert('Error: ' + data.error);
+                                }
+                            } catch (err) {
+                                alert('Unexpected error: ' + err.message);
+                            }
+                        }}
+                        sx={{ mb: 2, width: 150 }}
+                        InputLabelProps={{ shrink: true }}
+                        inputProps={{ step: 300 }}
+                    /> */}
 
                     <Typography sx={{ mb: 1 }}>
                         Backup Locations:

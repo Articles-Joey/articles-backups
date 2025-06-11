@@ -5,6 +5,7 @@ import { Box, Button, TextField, Typography, Modal, Container, Tabs, Tab } from 
 import SetupChecklist from "./SetupChecklist";
 import { useState } from "react";
 import { useInstallLocation } from "@/components/hooks/useInstallLocation";
+import useAwsVersion from "@/components/hooks/useAwsVersion";
 
 export default function Page() {
 
@@ -24,8 +25,16 @@ export default function Page() {
     const [confirmRemove, setConfirmRemove] = useState({ open: false, index: null });
 
     const {
-        data: installLocation,
+        version: installLocation,
     } = useInstallLocation();
+
+    const { version: awsVersion, isLoading: awsVersionLoading } = useAwsVersion();
+    // Example: add more provider connection logic as needed
+    const cloudProviders = [
+        { name: 'Articles Media: FS', connected: false },
+        { name: 'AWS: S3', connected: awsVersion },
+        { name: 'Cloudflare: R2', connected: false },
+    ];
 
     const [tab, setTab] = useState(0);
     const tabList = [
@@ -100,21 +109,24 @@ export default function Page() {
                     <>
                         <Typography sx={{ mb: 2 }}>Supported Cloud Backup Providers</Typography>
                         <div>
-                            {[
-                                { name: 'Articles Media: FS' },
-                                { name: 'AWS: S3' },
-                                { name: 'Cloudflare: R2' }
-                            ].map(provider_obj => (
+                            {cloudProviders.map(provider_obj => (
                                 <Box key={provider_obj.name} sx={{ mb: 1 }}>
                                     <Typography sx={{ mb: 0 }}>{provider_obj.name}</Typography>
-                                    <Typography sx={{ mb: 0, fontSize: '0.7rem' }}>Not connected</Typography>
-                                    <Button variant="contained" size="small" color="primary" onClick={() => { }} sx={{ mb: 2 }}>
-                                        Connect
+                                    <Typography sx={{ mb: 0, fontSize: '0.7rem', color: provider_obj.connected ? 'success.main' : 'error.main' }}>
+                                        {provider_obj.connected ? 'Connected' : 'Not connected'}
+                                    </Typography>
+                                    <Button variant="contained" size="small" color="primary" onClick={() => { }} sx={{ mb: 2 }} disabled={provider_obj.connected}>
+                                        {provider_obj.connected ? 'Connected' : 'Connect'}
                                     </Button>
                                     {provider_obj.name === 'AWS: S3' && (
-                                        <Box sx={{ mt: 1 }}>
-                                            <TextField label="AWS Upload Location (S3 URI)" size="small" fullWidth value={awsUploadLocation} onChange={e => setAwsUploadLocation(e.target.value)} sx={{ mb: 1 }} />
-                                        </Box>
+                                        <>
+                                            <Typography sx={{ mb: 0, fontSize: '0.7rem', color: provider_obj.connected ? 'success.main' : 'error.main' }}>
+                                                {awsVersion}
+                                            </Typography>
+                                            <Box sx={{ mt: 1 }}>
+                                                <TextField label="AWS Upload Location (S3 URI)" size="small" fullWidth value={awsUploadLocation} onChange={e => setAwsUploadLocation(e.target.value)} sx={{ mb: 1 }} />
+                                            </Box>
+                                        </>
                                     )}
                                 </Box>
                             ))}

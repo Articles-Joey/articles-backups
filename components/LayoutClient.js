@@ -1,8 +1,10 @@
 'use client';
 
-import { Button, createTheme, Dialog, DialogActions, DialogContent, DialogTitle, GlobalStyles, ThemeProvider, Typography } from "@mui/material";
+import { Box, Button, createTheme, Dialog, DialogActions, DialogContent, DialogTitle, GlobalStyles, ThemeProvider, Typography } from "@mui/material";
 import { useSiteStore } from "./stores/useSiteStore";
 import { useState } from "react";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 export default function LayoutClient({ children }) {
 
@@ -98,8 +100,8 @@ export default function LayoutClient({ children }) {
                 >
                     <DialogTitle>Terms of Use</DialogTitle>
                     <DialogContent>
-                        <Typography
-                            variant="body2"
+                        <Box
+                            sx={{}}
                         >
                             This application is provided as open source software for personal and educational use. By using this application, you agree that:
                             <ul style={{ marginTop: 8, marginBottom: 8 }}>
@@ -109,7 +111,7 @@ export default function LayoutClient({ children }) {
                                 <li>You may use, modify, and distribute this software under the terms of the project’s open source license.</li>
                             </ul>
                             If you do not agree to these terms, please do not use this application.
-                        </Typography>
+                        </Box>
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={() => setTermsOfUseAccepted(true)}>Accept</Button>
@@ -117,7 +119,11 @@ export default function LayoutClient({ children }) {
                 </Dialog>
             }
 
-            {children}
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+
+                {children}
+
+            </LocalizationProvider>
 
         </ThemeProvider >
     )
